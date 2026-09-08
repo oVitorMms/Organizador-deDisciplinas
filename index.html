@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organizador de Disciplinas</title>
+    <style>
+        * {
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            padding: 20px;
+        }
+        input {
+            margin: 5px;
+            padding: 5px;
+        }
+        button {
+            cursor: pointer;
+            padding: 5px 10px;
+            margin-left: 5px;
+        }
+        #main {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Disciplinas</h1>
+    <p>Nome: <input id="nome" type="text" placeholder="Ex: Algoritmos"></p>
+    <p>Horas estudadas: <input id="horas" type="number" min="0" placeholder="Ex: 40"></p>
+    <p>Foi concluída? <input id="conclusao" type="checkbox"></p>
+    <button id="adicionar" onclick="adicionarDisciplinas()">Adicionar disciplina</button>
+
+    <div id="main"></div>
+
+    <script>
+        let disciplinas = [];
+
+        function adicionarDisciplinas() {
+            const nomeInput = document.getElementById('nome');
+            const horasInput = document.getElementById('horas');
+            const checkboxConcluido = document.getElementById('conclusao');
+
+            const nome = nomeInput.value.trim();
+            const horas = Number(horasInput.value);
+
+            if (nome === "" || horasInput.value.trim() === "") {
+                alert("Preencha todos os campos corretamente.");
+                return;
+            }
+
+            if (horas < 0) {
+                alert("As horas estudadas não podem ser negativas.");
+                return;
+            }
+
+            const objetoDisciplina = {
+                nome: nome,
+                horasEstudadas: horas,
+                foiConcluido: checkboxConcluido.checked
+            };
+
+            disciplinas.push(objetoDisciplina);
+            salvarDados();    
+            listarDisciplinas();
+
+            // Limpa os campos após adicionar
+            nomeInput.value = "";
+            horasInput.value = "";
+            checkboxConcluido.checked = false;
+        }
+
+        function salvarDados() {
+            localStorage.setItem("dados", JSON.stringify(disciplinas));
+        }
+
+        function carregarDados() {
+            const dadosSalvos = localStorage.getItem("dados");
+            if (dadosSalvos !== null) {
+                disciplinas = JSON.parse(dadosSalvos);
+            }
+        }
+
+        function mudarStatus(index) {
+            disciplinas[index].foiConcluido = !disciplinas[index].foiConcluido;
+            salvarDados();
+            listarDisciplinas();
+        }
+
+        function removerDisciplina(index) {
+            disciplinas.splice(index, 1);
+            salvarDados();
+            listarDisciplinas();
+        }
+
+        function listarDisciplinas() {
+            const container = document.getElementById('main');
+            container.innerHTML = "";
+
+            disciplinas.forEach((item, i) => {
+                const statusText = item.foiConcluido ? "CONCLUÍDO" : "PENDENTE";
+                const btnText = item.foiConcluido ? "Desmarcar" : "Concluir";
+
+                container.innerHTML += `
+                    <p>
+                        <strong>${item.nome}</strong> - ${item.horasEstudadas} hrs - <em>${statusText}</em>
+                        <button onclick="mudarStatus(${i})">${btnText}</button>
+                        <button onclick="removerDisciplina(${i})">Excluir</button>
+                    </p>
+                `;
+            });
+        }
+        carregarDados();
+        listarDisciplinas();
+    </script>
+</body>
+</html>
